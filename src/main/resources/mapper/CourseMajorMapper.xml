@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.CourseMajorMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.CourseMajor">
+        <id column="id" property="id"/>
+        <result column="class_id" property="courseId"/>
+        <result column="major_id" property="majorId"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getCourseMajor" resultMap="courseMajorMap">
+        SELECT cm.id,
+               m.major,
+               cmy.year
+        FROM course_major AS cm
+                 INNER JOIN major m on cm.major_id = m.id
+                 INNER JOIN course_major_year cmy on cm.id = cmy.course_major_id
+        WHERE cm.course_id = #{id}
+          AND cm.is_deleted = 0
+          AND m.is_deleted = 0
+    </select>
+    <resultMap id="courseMajorMap" type="org.quanta.eas.pojo.CourseMajorInfo">
+        <id column="id" property="id"/>
+        <result column="major" property="major"/>
+        <collection property="year" ofType="string" javaType="ArrayList">
+            <result column="year"/>
+        </collection>
+    </resultMap>
+
+</mapper>

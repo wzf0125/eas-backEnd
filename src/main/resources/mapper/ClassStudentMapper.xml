@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.ClassStudentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.ClassStudent">
+        <id column="id" property="id"/>
+        <result column="student_id" property="studentId"/>
+        <result column="class_id" property="classId"/>
+        <result column="usual_score" property="usualScore"/>
+        <result column="final_score" property="finalScore"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getClassStudentInfo" resultType="org.quanta.eas.pojo.ClassStudentInfo">
+        SELECT cs.id,
+               cs.student_id,
+               cs.usual_score,
+               cs.final_score,
+               s.name,
+               s.number,
+               m.major
+        FROM class_student AS cs
+                 INNER JOIN student s on cs.student_id = s.id
+                 INNER JOIN student_major sm on s.id = sm.student_id
+                 INNER JOIN major m on sm.major_id = m.id
+        WHERE cs.is_deleted = 0
+          AND s.is_deleted IS NULL
+          AND m.is_deleted = 0
+          AND cs.class_id = #{id}
+    </select>
+
+    <select id="getStudentScore" resultType="org.quanta.eas.pojo.StudentClassScore">
+        SELECT cs.id,
+        cs.usual_score,
+        cs.final_score,
+        c.term,
+        c.name AS "className",
+        cc.course_id,
+        c2.name AS "courseName",
+        c.final_percentage * cs.final_score + c.usual_percentage * cs.final_score AS "score",
+        c.is_closed
+        FROM class_student AS cs
+        INNER JOIN class c on cs.class_id = c.id
+        INNER JOIN course_class cc on c.id = cc.class_id
+        INNER JOIN course c2 on cc.course_id = c2.id
+        WHERE cs.is_deleted = 0
+        AND c.is_deleted = 0
+        AND cc.is_deleted = 0
+        AND c2.is_deleted = 0
+        AND cs.student_id = #{sid}
+        <if test="term!=null">
+            AND c.term = #{term}
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getStudentScoreCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM class_student AS cs
+        INNER JOIN class c on cs.class_id = c.id
+        INNER JOIN course_class cc on c.id = cc.class_id
+        INNER JOIN course c2 on cc.course_id = c2.id
+        WHERE cs.is_deleted = 0
+        AND c.is_deleted = 0
+        AND cc.is_deleted = 0
+        AND c2.is_deleted = 0
+        AND cs.student_id = #{sid}
+        <if test="term!=null">
+            AND c.term = #{term}
+        </if>
+    </select>
+    <select id="getStudentClassList" resultType="org.quanta.eas.vo.ClassInfoVO">
+        SELECT c.id,
+        c.name,
+        c.capacity,
+        c.term,
+        t.name AS "teacherName",
+        t.id AS "teacherId",
+        c2.name AS "courseName",
+        c2.number AS "courseNumber"
+        FROM class_student AS cs
+        INNER JOIN course_class csl on csl.class_id = cs.class_id
+        INNER JOIN course c2 on csl.course_id = c2.id
+        INNER JOIN class c on c.id = cs.class_id
+        INNER JOIN student s on cs.student_id = s.id
+        INNER JOIN teacher t on c.teacher_id = t.id
+        WHERE cs.is_deleted = 0
+        AND c.is_deleted = 0
+        AND s.is_deleted IS NULL
+        AND c.term = #{term}
+        AND cs.student_id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c2.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c2.number LIKE CONCAT('%',#{keyWord},'%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getStudentClassListCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM class_student AS cs
+        INNER JOIN course_class csl on csl.class_id = cs.class_id
+        INNER JOIN course c2 on csl.course_id = c2.id
+        INNER JOIN class c on c.id = cs.class_id
+        INNER JOIN student s on cs.student_id = s.id
+        INNER JOIN teacher t on c.teacher_id = t.id
+        WHERE cs.is_deleted = 0
+        AND c.is_deleted = 0
+        AND s.is_deleted IS NULL
+        AND c.term = #{term}
+        AND cs.student_id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c2.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c2.number LIKE CONCAT('%',#{keyWord},'%')
+            )
+        </if>
+    </select>
+    <select id="getStudentClassTable" resultType="org.quanta.eas.vo.ClassInfoVO">
+        SELECT c.id,
+               c.name,
+               c.capacity,
+               c.term,
+               t.name    AS "teacherName",
+               t.id      AS "teacherId",
+               c2.name   AS "courseName",
+               c2.number AS "courseNumber"
+        FROM class_student AS cs
+                 INNER JOIN course_class csl on csl.class_id = cs.class_id
+                 INNER JOIN course c2 on csl.course_id = c2.id
+                 INNER JOIN class c on c.id = cs.class_id
+                 INNER JOIN student s on cs.student_id = s.id
+                 INNER JOIN teacher t on c.teacher_id = t.id
+        WHERE cs.is_deleted = 0
+          AND c.is_deleted = 0
+          AND s.is_deleted IS NULL
+          AND c.term = #{term}
+          AND cs.student_id = #{id}
+    </select>
+    <select id="getTeacherClassTable" resultType="org.quanta.eas.vo.ClassInfoVO">
+        SELECT c.id,
+               c.name,
+               c.capacity,
+               c.term,
+               t.name    AS "teacherName",
+               t.id      AS "teacherId",
+               c2.name   AS "courseName",
+               c2.number AS "courseNumber"
+        FROM class AS c
+                 INNER JOIN course_class csl on csl.class_id = c.id
+                 INNER JOIN course c2 on csl.course_id = c2.id
+                 INNER JOIN teacher t on c.teacher_id = t.id
+        WHERE c.is_deleted = 0
+          AND csl.is_deleted = 0
+          AND c2.is_deleted = 0
+          AND c.term = #{term}
+          AND c.teacher_id = #{id}
+    </select>
+
+</mapper>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.ClassTimeMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.ClassTime">
+        <id column="id" property="id"/>
+        <result column="class_id" property="classId"/>
+        <result column="week" property="week"/>
+        <result column="lesson" property="lesson"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getClassTime" resultMap="ClassTimeMap">
+        SELECT id, week, lesson
+        FROM class_time
+        WHERE class_id = #{id}
+          AND is_deleted = 0
+    </select>
+
+    <select id="getClassTimeList" resultMap="ClassTimeMap">
+        SELECT id, week, lesson,class_id
+        FROM class_time
+        WHERE class_id IN(
+        <foreach collection="id" item="item" index="index" separator=",">
+            #{item}
+        </foreach>)
+        AND is_deleted = 0
+        ORDER BY class_id,lesson
+    </select>
+
+
+    <resultMap id="ClassTimeMap" type="org.quanta.eas.pojo.ClassTimeInfo">
+        <result column="week" property="week"/>
+        <result column="class_id" property="classId"/>
+        <collection property="lesson" ofType="string">
+            <result column="lesson"/>
+        </collection>
+    </resultMap>
+</mapper>

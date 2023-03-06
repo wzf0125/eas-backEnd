@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.CourseMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.Course">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getCourseList" resultType="org.quanta.eas.pojo.CourseInfo">
+        SELECT DISTINCT c.id, c.number, c.name, m.major
+        FROM course AS c
+                 INNER JOIN major m on c.major_id = m.id
+                 INNER JOIN course_class cc on c.id = cc.course_id
+                 INNER JOIN class cl on cc.class_id = cl.id
+                 INNER JOIN teacher t on cl.teacher_id = t.id
+        WHERE t.id = #{id}
+          AND c.is_deleted = 0
+          AND cc.is_deleted = 0
+          AND cl.is_deleted = 0
+          AND t.is_deleted IS NULL
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getCoursePageByTeacherIdCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM course AS c
+                 INNER JOIN course_class cc on c.id = cc.course_id
+                 INNER JOIN class cl on cc.class_id = cl.id
+                 INNER JOIN teacher t on cl.teacher_id = t.id
+        WHERE t.id = #{id}
+          AND c.is_deleted = 0
+          AND cc.is_deleted = 0
+          AND cl.is_deleted = 0
+          AND t.is_deleted IS NULL
+    </select>
+    <select id="getCoursePage" resultType="org.quanta.eas.pojo.CourseInfo">
+        SELECT c.name, c.number, c.id, m.major
+        FROm course AS c
+        INNER JOIN major m on c.major_id = m.id
+        WHERE c.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c.number LIKE CONCAT('%',#{keyWord},'%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getCoursePageCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROm course AS c
+        INNER JOIN major m on c.major_id = m.id
+        WHERE c.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c.number LIKE CONCAT('%',#{keyWord},'%')
+            )
+        </if>
+    </select>
+
+    <select id="getCourse" resultType="org.quanta.eas.pojo.CourseInfo">
+        SELECT c.name, c.number, c.id, m.major
+        FROm course AS c
+                 INNER JOIN major m on c.major_id = m.id
+        WHERE c.id = #{id}
+          AND c.is_deleted = 0
+          AND m.is_deleted = 0
+    </select>
+    <select id="getCourseClassByTeacherId" resultMap="TeacherCourseClass">
+        SELECT c.id,
+        c.number,
+        c.name,
+        m.major,
+        cl.name,
+        cl.id AS "class_id",
+        cl.name AS "class_name",
+        cl.teacher_id,
+        t.name AS "teacher_name",
+        cl.capacity,
+        cl.final_percentage,
+        cl.usual_percentage,
+        cl.is_closed,
+        cl.term
+        FROM course AS c
+        INNER JOIN course_class cc on c.id = cc.course_id
+        INNER JOIN class cl on cc.class_id = cl.id
+        INNER JOIN teacher t on cl.teacher_id = t.id
+        INNER JOIN major m on c.major_id = m.id
+        WHERE t.id = #{id}
+        AND c.is_deleted = 0
+        AND cl.is_deleted = 0
+        AND t.is_deleted IS NULL
+        <if test="term!=null">
+            AND cl.term = #{term}
+        </if>
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%',#{keyWord},'%')
+            OR c.number LIKE CONCAT('%',#{keyWord},'%')
+            OR cl.name LIKE CONCAT('%',#{keyWord},'%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+
+    <resultMap id="TeacherCourseClass" type="org.quanta.eas.pojo.CourseClassInfo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="major" property="major"/>
+        <collection property="classList" ofType="org.quanta.eas.pojo.ClassInfo" javaType="ArrayList">
+            <id column="class_id" property="id"/>
+            <result column="class_name" property="name"/>
+            <result column="capacity" property="capacity"/>
+            <result column="teacher_id" property="teacherId"/>
+            <result column="teacher_name" property="teacherName"/>
+            <result column="usual_percentage" property="usualPercentage"/>
+            <result column="final_percentage" property="finalPercentage"/>
+            <result column="is_closed" property="isClosed"/>
+            <result column="term" property="term"/>
+        </collection>
+    </resultMap>
+
+    <select id="getCourseClassByTeacherIdCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM course AS c
+        INNER JOIN course_class cc on c.id = cc.course_id
+        INNER JOIN class cl on cc.class_id = cl.id
+        INNER JOIN teacher t on cl.teacher_id = t.id
+        INNER JOIN major m on c.major_id = m.id
+        WHERE t.id = #{id}
+        AND c.is_deleted = 0
+        AND cl.is_deleted = 0
+        AND t.is_deleted IS NULL
+        <if test="term!=null">
+            AND cl.term = #{term}
+        </if>
+    </select>
+    <select id="getCourseClassByTeacherIdAndCourseIdCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM course AS c
+                 INNER JOIN course_class cc on c.id = cc.course_id
+                 INNER JOIN class cl on cc.class_id = cl.id
+        WHERE c.is_deleted = 0
+          AND cc.is_deleted = 0
+          AND cl.is_deleted = 0
+          AND c.id = #{courseId}
+          AND cl.teacher_id = #{teacherId}
+    </select>
+    <select id="getStudentCourseList" resultMap="StudentCourseClass">
+        SELECT c.id,
+        c.number,
+        c.name,
+        m.major,
+        cl.name,
+        cl.id AS "class_id",
+        cl.name AS "class_name",
+        cl.teacher_id,
+        t.name AS "teacher_name",
+        cl.capacity,
+        ct.week,
+        ct.lesson
+        FROM course AS c
+        INNER JOIN course_class cc on c.id = cc.course_id
+        INNER JOIN class cl on cc.class_id = cl.id
+        INNER JOIN course_major cm on c.id = cm.course_id
+        INNER JOIN course_major_year cmy on cm.id = cmy.course_major_id
+        INNER JOIN major m on c.major_id = m.id
+        INNER JOIN teacher t on cl.teacher_id = t.id
+        INNER JOIN class_time ct on cl.id = ct.class_id
+        WHERE cmy.year IN
+        (SELECT sm.year
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        WHERE s.is_deleted IS NULL
+        AND s.id = #{id}
+        )
+        AND cm.major_id IN (
+        SELECT sm.major_id
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        WHERE s.is_deleted IS NULL
+        AND s.id = #{id}
+        )
+        AND cl.term = #{term}
+        AND c.is_deleted = 0
+        AND cl.is_deleted = 0
+        AND cmy.is_deleted = 0
+        AND cm.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR c.number LIKE CONCAT('%', #{keyWord}, '%')
+            OR cl.name LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getStudentCourseCount" resultType="java.lang.Long">
+        SELECT COUNT(DISTINCT c.id)
+        FROM course AS c
+        INNER JOIN course_class cc on c.id = cc.course_id
+        INNER JOIN class cl on cc.class_id = cl.id
+        INNER JOIN course_major cm on c.id = cm.course_id
+        INNER JOIN course_major_year cmy on cm.id = cmy.course_major_id
+        WHERE cmy.year IN
+        (SELECT sm.year
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        WHERE s.is_deleted IS NULL
+        AND s.id = #{id}
+        )
+        AND cm.major_id IN (
+        SELECT sm.major_id
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        WHERE s.is_deleted IS NULL
+        AND s.id = #{id}
+        )
+        AND cl.term = #{term}
+        AND c.is_deleted = 0
+        AND cl.is_deleted = 0
+        AND cmy.is_deleted = 0
+        AND cm.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            c.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR c.number LIKE CONCAT('%', #{keyWord}, '%')
+            OR cl.name LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+    </select>
+    <resultMap id="StudentCourseClass" type="org.quanta.eas.pojo.CourseClassInfo">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="major" property="major"/>
+        <collection property="classList" ofType="org.quanta.eas.pojo.ClassInfo" javaType="ArrayList">
+            <id column="class_id" property="id"/>
+            <result column="class_name" property="name"/>
+            <result column="capacity" property="capacity"/>
+            <result column="teacher_id" property="teacherId"/>
+            <result column="teacher_name" property="teacherName"/>
+            <association property="classTime" javaType="org.quanta.eas.pojo.ClassTimeInfo">
+                <result column="week" property="week"/>
+                <collection property="lesson" ofType="string" javaType="ArrayList">
+                    <result column="lesson"/>
+                </collection>
+            </association>
+        </collection>
+    </resultMap>
+
+</mapper>

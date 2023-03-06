@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.TeacherMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.Teacher">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getTeacherList" resultType="org.quanta.eas.vo.TeacherInfoVO">
+        SELECT t.id, t.number, t.name, m.major
+        FROM teacher AS t
+        INNER JOIN teacher_major tm on t.id = tm.teacher_id
+        INNER JOIN major m on tm.major_id = m.id
+        WHERE t.is_deleted IS NULL
+        AND tm.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            t.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR t.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+        limit #{start},#{size}
+    </select>
+    <select id="getTeacherCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM teacher AS t
+        INNER JOIN teacher_major tm on t.id = tm.teacher_id
+        INNER JOIN major m on tm.major_id = m.id
+        WHERE t.is_deleted IS NULL
+        AND tm.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            t.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR t.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+    </select>
+    <select id="getMajorTeacherList" resultType="org.quanta.eas.vo.TeacherInfoVO">
+        SELECT t.id, t.number, t.name, m.major
+        FROM teacher AS t
+        INNER JOIN teacher_major tm on t.id = tm.teacher_id
+        INNER JOIN major m on tm.major_id = m.id
+        WHERE t.is_deleted IS NULL
+        AND tm.is_deleted = 0
+        AND m.is_deleted = 0
+        AND m.id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            t.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR t.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+        limit #{start},#{size}
+    </select>
+    <select id="getMajorTeacherCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM teacher AS t
+        INNER JOIN teacher_major tm on t.id = tm.teacher_id
+        INNER JOIN major m on tm.major_id = m.id
+        WHERE t.is_deleted IS NULL
+        AND tm.is_deleted = 0
+        AND m.is_deleted = 0
+        AND m.id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            t.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR t.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+    </select>
+
+
+</mapper>

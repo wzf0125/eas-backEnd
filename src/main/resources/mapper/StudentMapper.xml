@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.StudentMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.Student">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="number" property="number"/>
+        <result column="password" property="password"/>
+        <result column="salt" property="salt"/>
+        <result column="is_deleted" property="isDeleted"/>
+    </resultMap>
+    <select id="getStudentList" resultType="org.quanta.eas.vo.StudentInfoVO">
+        SELECT s.id, s.name, s.number, sm.year, sm.year, m.major
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        INNER JOIN major m on sm.major_id = m.id
+        WHERE s.is_deleted IS NULL
+        AND sm.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            s.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR s.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getStudentCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        INNER JOIN major m on sm.major_id = m.id
+        WHERE s.is_deleted IS NULL
+        AND sm.is_deleted = 0
+        AND m.is_deleted = 0
+        <if test="keyWord!=null">
+            AND (
+            s.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR s.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+    </select>
+    <select id="getMajorStudentList" resultType="org.quanta.eas.vo.StudentInfoVO">
+        SELECT s.id,s.name, s.number, sm.year, sm.year,m.major
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        INNER JOIN major m on sm.major_id = m.id
+        WHERE s.is_deleted IS NULL
+        AND sm.is_deleted = 0
+        AND m.is_deleted = 0
+        AND m.id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            s.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR s.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+        LIMIT #{start},#{size}
+    </select>
+    <select id="getMajorStudentCount" resultType="java.lang.Long">
+        SELECT COUNT(*)
+        FROM student AS s
+        INNER JOIN student_major sm on s.id = sm.student_id
+        INNER JOIN major m on sm.major_id = m.id
+        WHERE s.is_deleted IS NULL
+        AND sm.is_deleted = 0
+        AND m.is_deleted = 0
+        AND m.id = #{id}
+        <if test="keyWord!=null">
+            AND (
+            s.name LIKE CONCAT('%', #{keyWord}, '%')
+            OR s.number LIKE CONCAT('%', #{keyWord}, '%')
+            )
+        </if>
+    </select>
+
+</mapper>

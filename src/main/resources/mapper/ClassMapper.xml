@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="org.quanta.eas.mapper.ClassMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="org.quanta.eas.entity.Class">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="capacity" property="capacity"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="is_closed" property="isClosed"/>
+    </resultMap>
+    <select id="getCourseClass" resultType="org.quanta.eas.pojo.ClassInfo">
+        SELECT cl.id,
+               cl.name,
+               cl.capacity,
+               cl.final_percentage,
+               cl.usual_percentage,
+               cl.is_closed,
+               t.name AS "teacherName",
+               t.id   AS "teacherId",
+               cl.term
+        FROM course_class cc
+                 INNER JOIN class cl on cc.class_id = cl.id
+                 INNER JOIN teacher t on cl.teacher_id = t.id
+        WHERE cc.course_id = #{id}
+          AND cc.is_deleted = 0
+          AND cl.is_deleted = 0
+          AND t.is_deleted IS NULL
+    </select>
+    <select id="getTeacherCourseClass" resultType="org.quanta.eas.pojo.ClassInfo">
+        SELECT cl.id,
+               cl.name,
+               cl.capacity,
+               cl.final_percentage,
+               cl.usual_percentage,
+               cl.is_closed,
+               t.name AS "teacherName",
+               t.id   AS "teacherId"
+        FROM course_class cc
+                 INNER JOIN class cl on cc.class_id = cl.id
+                 INNER JOIN teacher t on cl.teacher_id = t.id
+        WHERE cc.course_id = #{courseId}
+          AND t.id = #{teacherId}
+          AND cc.is_deleted = 0
+          AND cl.is_deleted = 0
+          AND t.is_deleted IS NULL
+    </select>
+    <select id="getClassInfo" resultType="org.quanta.eas.vo.ClassInfoVO">
+        SELECT c.id,
+               c.name,
+               c.capacity,
+               c.term,
+               c.usual_percentage,
+               c.final_percentage,
+               c.is_closed,
+               t.name AS "teacherName",
+               t.id   AS "teacherId",
+               m.major
+        FROM class AS c
+                 INNER JOIN teacher t on c.teacher_id = t.id
+                 INNER JOIN teacher_major tm on t.id = tm.teacher_id
+                 INNER JOIN major m on tm.major_id = m.id
+        WHERE c.id = #{id}
+          AND c.is_deleted = 0
+          AND t.is_deleted IS NULL
+          AND m.is_deleted = 0
+    </select>
+    <select id="getTeacherClassInfo" resultType="org.quanta.eas.vo.ClassInfoVO">
+        SELECT c.id,
+               c.name,
+               c.capacity,
+               c.term,
+               c.usual_percentage,
+               c.final_percentage,
+               c.is_closed,
+               t.name AS "teacherName",
+               t.id   AS "teacherId",
+               m.major
+        FROM class AS c
+                 INNER JOIN teacher t on c.teacher_id = t.id
+                 INNER JOIN teacher_major tm on t.id = tm.teacher_id
+                 INNER JOIN major m on tm.major_id = m.id
+        WHERE c.id = #{classId}
+          AND c.teacher_id = #{teacherId}
+          AND c.is_deleted = 0
+          AND t.is_deleted IS NULL
+          AND m.is_deleted = 0
+    </select>
+
+</mapper>
