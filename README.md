@@ -1,6 +1,7 @@
 # 教务系统
 
 <div align="center">
+
 ![](https://img.shields.io/badge/Springboot-2.7.6-blue) 
 ![](https://img.shields.io/badge/Mybatis--Plus-3.5.2-blue) 
 ![](https://img.shields.io/badge/Maven-3.8.1-blue)
