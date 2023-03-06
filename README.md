@@ -11,7 +11,7 @@
 
 ## 背景
 
-软件工程课程实践后端项目，后端才用Springboot作为主体框架，Mybatis-plus作为持久层框架，使用Docker容器部署
+软件工程课程实践后端项目，后端采用Springboot作为主体框架，Mybatis-plus作为持久层框架，使用Docker容器部署
 
 
 
